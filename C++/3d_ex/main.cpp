@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -7,7 +8,7 @@
 #define s1 50
 #define s2 100
 #define s3 1000
-#define interval 10.
+#define interval 5.
 
 using namespace std;
 
@@ -22,21 +23,18 @@ int main() {
 }
 
 double chi_sqr(vector<int> arr) {
-  double Vexp = arr.size() / interval;
   double chi_sqr = 0.;
+  size_t size = arr.size();
+  double Vexp = size / interval;
 
-  for (size_t i = 0; i < interval; i++) {
-    double Vn = 0.;
+  vector<int> elements(interval, 0);
 
-    size_t start = arr.size() / interval * i;
-    size_t end = start + arr.size() / interval;
+  for (auto el : arr)
+    elements[int(el * interval / 101)]++;
 
-    for (size_t j = start; j < end; j++) {
-      if (arr[j] >= start && arr[j] <= end)
-        Vn++;
-    }
+  for (auto Vn : elements)
     chi_sqr += pow(Vn - Vexp, 2) / Vexp;
-  }
+
   return chi_sqr;
 }
 
