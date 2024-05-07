@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <random>
@@ -7,24 +6,34 @@
 using namespace std;
 
 int get_rounds();
-
-void play_game(function<bool(int32_t, vector<bool>, vector<bool>)>,
-               function<bool(int32_t, vector<bool>, vector<bool>)>);
-
-void play_round(function<bool(int32_t, vector<bool>, vector<bool>)>, int32_t &,
-                vector<bool> &,
-                function<bool(int32_t, vector<bool>, vector<bool>)>, int32_t &,
-                vector<bool> &, int32_t);
-
+void update_score(bool, int32_t &, bool, int32_t &);
 bool always_betray(int32_t, vector<bool>, vector<bool>);
 bool always_cooperate(int32_t, vector<bool>, vector<bool>);
 bool tit_for_tat(int32_t, vector<bool>, vector<bool>);
 
 int main() {
+  function<bool(int32_t, vector<bool>, vector<bool>)> alg1 = always_cooperate;
+  function<bool(int32_t, vector<bool>, vector<bool>)> alg2 = always_betray;
+  function<bool(int32_t, vector<bool>, vector<bool>)> alg3 = tit_for_tat;
 
-  play_game(always_betray, always_cooperate);
-  play_game(always_betray, always_betray);
-  play_game(always_cooperate, always_cooperate);
+  int32_t num_rounds = get_rounds();
+  vector<bool> self_choices, enemy_choices;
+  int32_t self_score = 0;
+  int32_t enemy_score = 0;
+
+  for (int i = 0; i < num_rounds; i++) {
+    bool self_action = alg1(i, self_choices, enemy_choices);
+    bool enemy_action = alg2(i, self_choices, enemy_choices);
+
+    self_choices.push_back(self_action);
+    enemy_choices.push_back(enemy_action);
+
+    update_score(self_action, self_score, enemy_action, enemy_score);
+  }
+
+  cout << num_rounds << " rounds\nself score - " << self_score
+       << "\nenemy score - " << enemy_score << endl;
+
   return 0;
 }
 
@@ -45,18 +54,8 @@ bool tit_for_tat(int32_t round_number, vector<bool> self_choices,
   return false;
 }
 
-void play_round(
-    function<bool(int32_t, vector<bool>, vector<bool>)> self_strategy,
-    int32_t &self_score, vector<bool> &self_choices,
-    function<bool(int32_t, vector<bool>, vector<bool>)> enemy_strategy,
-    int32_t &enemy_score, vector<bool> &enemy_choices, int32_t round_number) {
-
-  bool self_action = self_strategy(round_number, self_choices, enemy_choices);
-  bool enemy_action = enemy_strategy(round_number, self_choices, enemy_choices);
-
-  self_choices.push_back(self_action);
-  enemy_choices.push_back(enemy_action);
-
+void update_score(bool self_action, int32_t &self_score, bool enemy_action,
+                  int32_t &enemy_score) {
   if (!self_action && !enemy_action) {
     self_score += 4;
     enemy_score += 4;
@@ -68,23 +67,6 @@ void play_round(
   else
     self_score += 20;
 }
-
-void play_game(
-    function<bool(int32_t, vector<bool>, vector<bool>)> self_strategy,
-    function<bool(int32_t, vector<bool>, vector<bool>)> enemy_strategy) {
-  int32_t num_rounds = get_rounds();
-  vector<bool> self_choices, enemy_choices;
-  int32_t self_score = 0;
-  int32_t enemy_score = 0;
-
-  for (int i = 1; i <= num_rounds; i++)
-    play_round(self_strategy, self_score, self_choices, enemy_strategy,
-               enemy_score, enemy_choices, i);
-
-  cout << num_rounds << " rounds\nself score - " << self_score
-       << "\nenemy score - " << enemy_score << endl;
-}
-
 int get_rounds() {
   random_device rd;
   mt19937 gen(rd());
