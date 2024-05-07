@@ -1,4 +1,3 @@
-#include <functional>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -12,18 +11,14 @@ bool always_cooperate(int32_t, vector<bool>, vector<bool>);
 bool tit_for_tat(int32_t, vector<bool>, vector<bool>);
 
 int main() {
-  function<bool(int32_t, vector<bool>, vector<bool>)> alg1 = always_cooperate;
-  function<bool(int32_t, vector<bool>, vector<bool>)> alg2 = always_betray;
-  function<bool(int32_t, vector<bool>, vector<bool>)> alg3 = tit_for_tat;
-
   int32_t num_rounds = get_rounds();
   vector<bool> self_choices, enemy_choices;
   int32_t self_score = 0;
   int32_t enemy_score = 0;
 
   for (int i = 0; i < num_rounds; i++) {
-    bool self_action = alg1(i, self_choices, enemy_choices);
-    bool enemy_action = alg2(i, self_choices, enemy_choices);
+    bool self_action = always_betray(i, self_choices, enemy_choices);
+    bool enemy_action = always_cooperate(i, self_choices, enemy_choices);
 
     self_choices.push_back(self_action);
     enemy_choices.push_back(enemy_action);
